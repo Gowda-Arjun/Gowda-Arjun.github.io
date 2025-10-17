@@ -3,7 +3,7 @@ title: "Home"
 layout: "main"
 hero_title: "<your name>"
 hero_subtitle: "about you"
-hero_image: "/assets/images/you.png"
+hero_image: "/assets/images/hero.png"
 social_links:
     - name: "GitHub"
       url: "https://github.com/yourusername"

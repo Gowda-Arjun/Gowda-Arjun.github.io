@@ -40,21 +40,49 @@ def save_current_slugs(slugs):
 
 def clean_output(directory):
     print("Cleaning old build files...")
-    for root, dirs, files in os.walk(directory):
-        for filename in files:
-            if filename == "index.html" or filename.endswith(".xml"):
-                file_path = os.path.join(root, filename)
-                os.remove(file_path)
-                print(f"Deleted: {file_path}")
+    preserved_roots = {
+        ".git",
+        ".github",
+        ".cache",
+        "assets",
+        "content",
+        "node_modules",
+        "src",
+        "templates",
+    }
+    generated_roots = {"blog", "tags", "posts"}
 
-    posts_dir_path = os.path.join(directory, "posts")
-    tags_dir_path = os.path.join(directory, "tags")
-    if os.path.exists(posts_dir_path):
-        shutil.rmtree(posts_dir_path)
-        print(f"Deleted directory: {posts_dir_path}")
-    if os.path.exists(tags_dir_path):
-        shutil.rmtree(tags_dir_path)
-        print(f"Deleted directory: {tags_dir_path}")
+    removed_any = False
+    for root, _, files in os.walk(directory, topdown=False):
+        rel_root = os.path.relpath(root, directory)
+        if rel_root == ".":
+            rel_root = ""
+        top_level = rel_root.split(os.sep)[0] if rel_root else ""
+
+        if top_level in preserved_roots:
+            continue
+
+        for filename in files:
+            delete_file = False
+            if top_level in generated_roots:
+                delete_file = True
+            elif filename == "index.html" or filename.endswith(".xml"):
+                delete_file = True
+
+            if delete_file:
+                file_path = os.path.join(root, filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    removed_any = True
+                    print(f"Deleted: {file_path}")
+
+        if rel_root and top_level not in preserved_roots and not os.listdir(root):
+            os.rmdir(root)
+            removed_any = True
+            print(f"Deleted empty directory: {root}")
+
+    if not removed_any:
+        print("No generated files found to delete.")
 
 
 def has_file_changed(filepath, cache_dir=".cache"):
@@ -99,6 +127,23 @@ def build_markdown():
     return markdown.Markdown(
         extensions=MARKDOWN_EXTENSIONS, extension_configs=MARKDOWN_EXTENSION_CONFIGS
     )
+
+
+def load_templates(env, template_dir=TEMPLATE_DIR, allowed_extensions=(".html", ".jinja", ".jinja2", ".j2")):
+    templates = {}
+    for root, _, files in os.walk(template_dir):
+        for filename in files:
+            if allowed_extensions and not filename.endswith(allowed_extensions):
+                continue
+            rel_path = os.path.relpath(os.path.join(root, filename), template_dir)
+            rel_path = rel_path.replace(os.sep, "/")
+            template = env.get_template(rel_path)
+            base_name = os.path.splitext(filename)[0]
+            rel_without_ext = os.path.splitext(rel_path)[0]
+            for key in (rel_path, rel_without_ext, base_name):
+                if key not in templates:
+                    templates[key] = template
+    return templates
 
 
 def parse_file(filepath):
@@ -172,7 +217,10 @@ def tag_pages(tag_template, site_config, tags={}):
 def render_page(page_config, html_data, site_config, templates, all_posts=None):
     layout = page_config.get("layout")
     if layout not in templates:
-        print("Error: Template not found. Skipping build.")
+        available = ", ".join(sorted(templates.keys())) or "none"
+        print(
+            f"Error: Template '{layout}' not found. Available templates: {available}. Skipping build."
+        )
         return
 
     template = templates[layout]
@@ -215,12 +263,7 @@ def main():
     with open(CONFIG_FILE, "r") as f:
         site_config = yaml.safe_load(f)
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
-    templates = {
-        "main": env.get_template("main.html"),
-        "blog": env.get_template("blog.html"),
-        "post": env.get_template("post.html"),
-        "tags": env.get_template("tags.html"),
-    }
+    templates = load_templates(env)
 
     if args.file:
         print(f"Change detected in {args.file}, proceeding to rebuild...")
@@ -315,7 +358,11 @@ def main():
                 page["data"], page["content"], site_config, templates, all_posts
             )
 
-        tag_pages(templates["tags"], site_config, tags)
+        tag_template = templates.get("tags") or templates.get("tags.html")
+        if tag_template:
+            tag_pages(tag_template, site_config, tags)
+        else:
+            print("Warning: tags template not found; skipping tag page generation.")
 
         sitemap_template = env.get_template("sitemap.xml.j2")
         sitemap_xml = sitemap_template.render(site=site_config, pages=sitemap_list)
