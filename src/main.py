@@ -44,7 +44,7 @@ def load_previous_slugs():
 
 def save_current_slugs(slugs):
     os.makedirs(os.path.dirname(PAGE_SLUG_CACHE), exist_ok=True)
-    with open(PAGE_SLUG_CACHE, "w") as f:
+    with open(PAGE_SLUG_CACHE, "w", encoding="utf-8") as f:
         json.dump(sorted(slugs), f)
 
 
@@ -105,12 +105,12 @@ def has_file_changed(filepath, cache_dir=".cache"):
     cache_file = os.path.join(cache_dir, safe_name)
 
     if os.path.exists(cache_file):
-        with open(cache_file, "r") as f:
+        with open(cache_file, "r", encoding="utf-8") as f:
             cached_hash = f.read().strip()
         if cached_hash == file_hash:
             return False
 
-    with open(cache_file, "w") as f:
+    with open(cache_file, "w", encoding="utf-8") as f:
         f.write(file_hash)
     return True
 
@@ -182,6 +182,7 @@ def normalize_theme_config(config):
 
 def write_theme_file(config, output_path=GENERATED_THEME_PATH):
     theme = config.get("theme") or {}
+    print(f"DEBUG: write_theme_file theme config: {theme}")
     include = theme.get("include") or []
     include_list = _ensure_sequence(include)
 
@@ -196,8 +197,8 @@ def write_theme_file(config, output_path=GENERATED_THEME_PATH):
 
     css_blocks = []
     if names:
-        joined_names = ", ".join(json.dumps(name) for name in names)
-        css_blocks.append(f'@plugin "daisyui" {{\n  themes: ({joined_names});\n}}')
+        joined_names = ", ".join(names)
+        css_blocks.append(f'@plugin "daisyui" {{\n  themes: {joined_names};\n}}')
     else:
         css_blocks.append('@plugin "daisyui" {\n  themes: all;\n}')
 
@@ -588,7 +589,7 @@ def tag_pages(tag_template, site_config, tags=None, image_manifest=None):
         )
         tag_page_html = replace_images_with_processed(tag_page_html, image_manifest)
         output_path = os.path.join(tags_dir, f"{tag_name}.html")
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(tag_page_html)
         print(f"Generated tag page: tags/{tag_name}.html")
 
@@ -600,6 +601,8 @@ def render_page(
     templates,
     image_manifest=None,
     all_posts=None,
+    all_team_members=None,
+    all_doggos=None,
 ):
     layout = page_config.get("layout") or "post"
     if layout not in templates:
@@ -614,6 +617,10 @@ def render_page(
     render_details = {"site": site_config, "page": page_config, "content": html_data}
     if layout == "blog" and all_posts is not None:
         render_details["posts"] = all_posts
+    if layout == "team" and all_team_members is not None:
+        render_details["team_members"] = all_team_members
+    if layout == "doggos" and all_doggos is not None:
+        render_details["doggos"] = all_doggos
 
     final_html = template.render(render_details)
     final_html = replace_images_with_processed(final_html, image_manifest)
@@ -626,7 +633,7 @@ def render_page(
         )
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(final_html)
     print(
         f"Generated: {page_config['url'] if page_config['url'] != '/' else '/index.html'}"
@@ -876,6 +883,9 @@ def main():
         current_slugs = set()
         previous_slugs = load_previous_slugs()
 
+        all_team_members = []
+        all_doggos = []
+
         for root, _, files in os.walk(CONTENT_DIR):
             for filename in files:
                 if not filename.endswith(".md"):
@@ -903,6 +913,10 @@ def main():
                     all_posts.append(page_data)
                     for tag in page_data.get("tags") or []:
                          tags.setdefault(tag, []).append(page_data)
+                elif page_data.get("layout") == "team-member":
+                    all_team_members.append(page_data)
+                elif page_data.get("layout") == "doggo-profile":
+                    all_doggos.append(page_data)
 
         removed = previous_slugs - current_slugs
         for slug in removed:
@@ -923,7 +937,19 @@ def main():
             ),
             reverse=True,
         )
+        
+        # Sort team members by 'order' or name
+        all_team_members.sort(key=lambda x: x.get("order", 999))
+        
+        # Sort doggos by 'order' or name
+        all_doggos.sort(key=lambda x: x.get("order", 999))
+
         for page in pages:
+            if page["data"].get("layout") == "team-member":
+                continue
+            if page["data"].get("layout") == "doggo-profile":
+                continue
+
             render_page(
                 page["data"],
                 page["content"],
@@ -931,6 +957,8 @@ def main():
                 templates,
                 image_manifest=image_manifest,
                 all_posts=all_posts,
+                all_team_members=all_team_members,
+                all_doggos=all_doggos,
             )
 
         tag_template = templates.get("tags") or templates.get("tags.html")

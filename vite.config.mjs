@@ -52,10 +52,18 @@ const resolvePythonExecutable = () => {
     return envOverride;
   }
 
-  const venvPython = path.join(__dirname, '.venv/bin/python');
-  if (fs.existsSync(venvPython)) {
-    return venvPython;
+  const venvPythonBin = path.join(__dirname, '.venv/bin/python');
+  const venvPythonScripts = path.join(__dirname, '.venv/Scripts/python.exe');
+  
+  if (process.platform === 'win32') {
+    if (fs.existsSync(venvPythonScripts)) return venvPythonScripts;
+  } else {
+    if (fs.existsSync(venvPythonBin)) return venvPythonBin;
   }
+  
+  // Fallback check regardless of platform prediction (e.g. mingw/cygwin)
+  if (fs.existsSync(venvPythonBin)) return venvPythonBin;
+  if (fs.existsSync(venvPythonScripts)) return venvPythonScripts;
 
   const siteConfig = loadSiteConfig();
   const runtimeConfig = siteConfig && typeof siteConfig === 'object' ? siteConfig.runtime : null;
@@ -75,7 +83,7 @@ const resolvePythonExecutable = () => {
     }
   }
 
-  return 'python3';
+  return process.platform === 'win32' ? 'python' : 'python3';
 };
 
 let pythonExecutable = resolvePythonExecutable();
@@ -83,13 +91,20 @@ console.log(`[config] Using Python executable: ${pythonExecutable}`);
 
 const ensurePythonRequirements = () => {
   const venvPath = path.join(__dirname, '.venv');
-  const venvPython = path.join(venvPath, 'bin/python');
-  const venvPip = path.join(venvPath, 'bin/pip');
+  const isWindows = process.platform === 'win32';
+  
+  const venvPython = isWindows 
+    ? path.join(venvPath, 'Scripts', 'python.exe')
+    : path.join(venvPath, 'bin', 'python');
+
+  const venvPip = isWindows
+    ? path.join(venvPath, 'Scripts', 'pip.exe')
+    : path.join(venvPath, 'bin', 'pip');
 
   if (!fs.existsSync(venvPath)) {
     console.log('Creating python virtual environment...');
     try {
-      execSync(`python3 -m venv "${venvPath}"`, { stdio: 'inherit' });
+      execSync(`python -m venv "${venvPath}"`, { stdio: 'inherit' });
       pythonExecutable = venvPython;
     } catch (e) {
       console.error('Failed to create virtual environment.', e);
@@ -99,7 +114,8 @@ const ensurePythonRequirements = () => {
 
   try {
     console.log('Installing python dependencies...');
-    execSync(`${venvPip} install -r "${requirementsPath}"`, { stdio: 'inherit' });
+
+    execSync(`"${venvPip}" install -r "${requirementsPath}"`, { stdio: 'inherit' });
   } catch (e) {
     console.error('Failed to install Python dependencies.', e);
   }
