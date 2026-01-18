@@ -203,7 +203,7 @@ const py_build_plugin = () => {
 
       build();
 
-      server.watcher.on('all', (event, filePath) => {
+      server.watcher.on('all', async (event, filePath) => {
         if (!ready) {
           return;
         }
@@ -223,11 +223,26 @@ const py_build_plugin = () => {
             build();
           }
         }
+        if (filePath.includes('/assets/images/')) {
+             if (event === 'add' || event === 'change' || event === 'unlink') {
+                 console.log(`[watcher] Image change detected: ${event} ${filePath}`);
+                 try {
+                     const siteConfig = loadSiteConfig();
+                     await processImages(inputDir, outputDir, siteConfig);
+                     build();
+                 } catch (e) {
+                     console.error('[watcher] Image processing failed', e);
+                 }
+             }
+        }
         if (event === 'change' && filePath.includes('/assets/css/')) {
           build();
         }
         if (event === 'unlink') {
-          build();
+          // This might be redundant if specific handlers catch it, but keeps original logic for other files
+          if (!filePath.includes('/assets/images/')) {
+              build();
+          }
         }
       });
     },
