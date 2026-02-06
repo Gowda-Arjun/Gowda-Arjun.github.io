@@ -104,7 +104,7 @@ const ensurePythonRequirements = () => {
   if (!fs.existsSync(venvPath)) {
     console.log('Creating python virtual environment...');
     try {
-      execSync(`\"${pythonExecutable}\" -m venv "${venvPath}"`, { stdio: 'inherit' });
+      execSync(`"${pythonExecutable}" -m venv "${venvPath}"`, { stdio: 'inherit' });
       pythonExecutable = venvPython;
     } catch (e) {
       console.error('Failed to create virtual environment.', e);
@@ -201,8 +201,6 @@ const py_build_plugin = () => {
 
       build();
 
-      build();
-
       server.watcher.on('all', async (event, filePath) => {
         if (!ready) {
           return;
@@ -239,7 +237,6 @@ const py_build_plugin = () => {
           build();
         }
         if (event === 'unlink') {
-          // This might be redundant if specific handlers catch it, but keeps original logic for other files
           if (!filePath.includes('/assets/images/')) {
               build();
           }
