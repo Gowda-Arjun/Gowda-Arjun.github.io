@@ -1,6 +1,6 @@
-site_name: "site"
-author: "you"
-base_url: "you.com"
+site_name: "Arjun's ALMOST interesting Website"
+author: "Arjun Gowda"
+base_url: "CowsSayMoo.com"
 
 theme:
   default: "hacktoberfest25"
