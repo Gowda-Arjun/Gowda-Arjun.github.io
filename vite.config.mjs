@@ -164,6 +164,28 @@ if (!process.listenerCount('SIGINT')) {
   process.on('SIGINT', handleExit);
 }
 
+const copyAssetsPlugin = () => {
+  return {
+    name: 'copy-assets',
+    apply: 'build',
+    enforce: 'post',
+    async closeBundle() {
+      const srcDir = path.join(__dirname, 'assets');
+      const destDir = path.join(__dirname, 'dist', 'assets');
+      
+      if (fs.existsSync(srcDir)) {
+        try {
+          // Copy the entire assets folder to dist/assets
+          fs.cpSync(srcDir, destDir, { recursive: true, force: true });
+          console.log('[assets] Copied assets folder to dist/assets');
+        } catch (e) {
+          console.error('[assets] Failed to copy assets folder:', e);
+        }
+      }
+    }
+  };
+};
+
 const py_build_plugin = () => {
   let ready = false;
 
@@ -273,6 +295,7 @@ export default defineConfig(async ({ command }) => {
     plugins: [
       py_build_plugin(),
       tailwindcss(),
+      copyAssetsPlugin(),
     ],
     build: {
       outDir: './dist',
