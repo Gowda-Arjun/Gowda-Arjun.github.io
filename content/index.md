@@ -5,11 +5,11 @@ hero_title: "Arjun Gowda"
 hero_subtitle: |
   Second year CSE @ PES University, ECC.
 
-  Avid cat lover, mentally fueled by music, sports, and almost always- Caffeine.
+  Passionate Computer Networks and ML enthusiast, amongst many other domains I've explored
 
-  On the tech side, I enjoy Computer Networks and ML the most, with other domains closely following.
+  Avid cat lover, mentally fueled by music, sports, and almost always- Caffeine.
   
-  Want to know more? explore the site :D
+  Want to know more? explore the site or contact me :D
 
 hero_image: "/assets/images/p1.jpeg"
 social_links:
