@@ -9,8 +9,6 @@ tags:
     - "pca"
 ---
 
-# Understanding Sequential NLPCA
-
 Maybe it's just me, but a lot of the times when reading a research paper, everything written just seems to fly our the top of my head, despite multiple reads. Is it the concept itself being hard to grasp and me being intimidated by the formatting? Or is it just me being dense? (most likely)
 Whatever it is, I decided to make a mini-blog that's much simpler to understand, and a little easier on the eyes.
 
