@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="amethyst">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRMAE | Arjun's ALMOST interesting Website</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/syntax.css">
+</head>
+
+<body class="pt-24 min-h-screen flex flex-col">
+  <!-- Vanta background -->
+   <!-- https://www.vantajs.com/?effect=clouds#(backgroundAlpha:1,backgroundColor:16777215,cloudColor:4943033,cloudShadowColor:1784149,gyroControls:!f,minHeight:200,minWidth:200,mouseControls:!t,mouseEase:!t,scale:3,scaleMobile:12,skyColor:2305104,speed:0,sunColor:11506677,sunGlareColor:16737843,sunlightColor:16750899,touchControls:!t)-->
+  <div id="vanta-background" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+  
+  <div class="navbar fixed top-0 left-0 z-50" style="background-color: transparent;">
+    <div class="flex-1">
+      <a href="/" class="btn btn-ghost text-xl">Arjun's ALMOST interesting Website</a>
+    </div>
+    <div class="flex-none">
+      <ul class="menu menu-horizontal px-1">
+        
+        <li><a href="/">Home</a></li>
+        
+        <li><a href="/blog/">Blog</a></li>
+        
+      </ul>
+    </div>
+  </div>
+
+  <main class="flex-grow container mx-auto p-8">
+    
+<div class="max-w-4xl mx-auto bg-primary/50">
+<article class="prose dark:prose-invert max-w-none">
+    <header>
+        <h1 class="mb-2">IRMAE</h1>
+        
+        <p class="text-sm opacity-70">Published on: 2026-02-15</p>
+        
+        
+        <p class="text-sm mt-2">
+            Tags:
+            
+            <a class="badge badge-sm" href="/tags/machine-learning.html">machine-learning</a>
+            
+            <a class="badge badge-sm" href="/tags/neural-networks.html">neural-networks</a>
+            
+            <a class="badge badge-sm" href="/tags/nlpca.html">nlpca</a>
+            
+            <a class="badge badge-sm" href="/tags/pca.html">pca</a>
+            
+        </p>
+        
+        <hr>
+    </header>
+
+    <h1 id="implicit-rank-minimizing-autoencoder-irmae">Implicit Rank-Minimizing Autoencoder (IRMAE)<a class="headerlink" href="#implicit-rank-minimizing-autoencoder-irmae" title="Permanent link">&para;</a></h1>
+<p>We know that almost everything neural networks-related operates using tensors and matrices, and this extends to Autoencoders. Clearly, from the name, you can tell an IRMAE minimizes the rank of your Autoencoder, implicitly. But what exactly does that mean, what does that do, why do you want to do it, and how is that implemented, are all questions you'll hopefully not be having by the end of this blog. </p>
+<h2 id="what-an-irmae-does-differently-from-an-ae">What an IRMAE does differently from an AE<a class="headerlink" href="#what-an-irmae-does-differently-from-an-ae" title="Permanent link">&para;</a></h2>
+<p><picture><source type="image/webp" srcset="/assets/images-processed/AE-640.webp 640w, /assets/images-processed/AE-1280.webp 1280w, /assets/images-processed/AE-3360.webp 3360w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/AE-640.jpg 640w, /assets/images-processed/AE-1280.jpg 1280w, /assets/images-processed/AE-3360.jpg 3360w" sizes="100vw"><img src="/assets/images-processed/AE-3360.jpg" alt="alt text" srcset="/assets/images-processed/AE-640.jpg 640w, /assets/images-processed/AE-1280.jpg 1280w, /assets/images-processed/AE-3360.jpg 3360w" sizes="100vw"></picture></p>
+<p>In your typical Autoencoder (AE), you have 3 main parts. You have an input layer, which is the data you want to encode, as you can see from the image, you decrease the dimensions of the data as you go through the layers. This essentially compresses the input data into a lower-dimensional representation. You then have your Latent Space, which is the bottleneck layer that contains the compressed representation of the input data. Finally, you have your output layer, which is where the model tries to reconstruct the original input data from the compressed representation in the latent space.</p>
+<p>A simpler diagram would be:</p>
+<p><picture><source type="image/webp" srcset="/assets/images-processed/AE-sketch-640.webp 640w, /assets/images-processed/AE-sketch-1280.webp 1280w, /assets/images-processed/AE-sketch-1772.webp 1772w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/AE-sketch-640.jpg 640w, /assets/images-processed/AE-sketch-1280.jpg 1280w, /assets/images-processed/AE-sketch-1772.jpg 1772w" sizes="100vw"><img src="/assets/images-processed/AE-sketch-1772.jpg" alt="alt text" srcset="/assets/images-processed/AE-sketch-640.jpg 640w, /assets/images-processed/AE-sketch-1280.jpg 1280w, /assets/images-processed/AE-sketch-1772.jpg 1772w" sizes="100vw"></picture></p>
+<p>Now, your IRMAE is almost the same thing, but you add extra layers between the encoder and the latent space. </p>
+<p><picture><source type="image/webp" srcset="/assets/images-processed/IRMAE-sketch-640.webp 640w, /assets/images-processed/IRMAE-sketch-1280.webp 1280w, /assets/images-processed/IRMAE-sketch-2384.webp 2384w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/IRMAE-sketch-640.jpg 640w, /assets/images-processed/IRMAE-sketch-1280.jpg 1280w, /assets/images-processed/IRMAE-sketch-2384.jpg 2384w" sizes="100vw"><img src="/assets/images-processed/IRMAE-sketch-2384.jpg" alt="alt text" srcset="/assets/images-processed/IRMAE-sketch-640.jpg 640w, /assets/images-processed/IRMAE-sketch-1280.jpg 1280w, /assets/images-processed/IRMAE-sketch-2384.jpg 2384w" sizes="100vw"></picture></p>
+<h3 id="what-these-extra-layers-do">What these extra layers do<a class="headerlink" href="#what-these-extra-layers-do" title="Permanent link">&para;</a></h3>
+<p>It reduces the rank (NOT to be confused with size/dimensions reduction)</p>
+<p>In your normal AE, the rank of the latent space is equal to the number of neurons, and the size reduces as your latent code is a bottleneck. So if your latent code has, for example, 16 dimensions, then the rank of the latent space is 16, and all 16 dimensions are used to encode the data.</p>
+<p>In an IRMAE, the extra layers thin out the information. The rank of the latent space is reduced by adding extra layers between the encoder and the latent space. This means that even if your latent code has 16 dimensions, the extra layers will force the model to use fewer dimensions, for example, 8 dimensions.</p>
+<p>Now you might think- Why don't i just use a smaller latent code of like 8 dimensions? Its because you don't know the true dimensionality of the data. If you use a smaller latent code, you might be throwing away important information. If you use a larger latent code, you'd be overfitting. With IRMAE though, you can use a larger latent code and let the model figure out how many dimensions to use by reducing the rank. </p>
+<h3 id="what-happens-to-the-layers">What happens to the layers<a class="headerlink" href="#what-happens-to-the-layers" title="Permanent link">&para;</a></h3>
+<p>In practice, they are absorbed into the last layer of the encoder during inference. These matrices- (W1, W2, ....) are equivalent to a single linear layer at inference time, so they do not change the capacity of the autoencoder. </p>
+<p><picture><source type="image/webp" srcset="/assets/images-processed/IRMAE-layers-640.webp 640w, /assets/images-processed/IRMAE-layers-1280.webp 1280w, /assets/images-processed/IRMAE-layers-1404.webp 1404w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/IRMAE-layers-640.jpg 640w, /assets/images-processed/IRMAE-layers-1280.jpg 1280w, /assets/images-processed/IRMAE-layers-1404.jpg 1404w" sizes="100vw"><img src="/assets/images-processed/IRMAE-layers-1404.jpg" alt="alt text" srcset="/assets/images-processed/IRMAE-layers-640.jpg 640w, /assets/images-processed/IRMAE-layers-1280.jpg 1280w, /assets/images-processed/IRMAE-layers-1404.jpg 1404w" sizes="100vw"></picture></p>
+<h4 id="how-are-the-layers-absorbed">How are the layers 'absorbed'?<a class="headerlink" href="#how-are-the-layers-absorbed" title="Permanent link">&para;</a></h4>
+<p>Typically, in a normal AE, your L2 reconstruction loss is <br />
+<picture><source type="image/webp" srcset="/assets/images-processed/L2-loss-408.webp 408w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/L2-loss-408.jpg 408w" sizes="100vw"><img src="/assets/images-processed/L2-loss-408.jpg" alt="alt text" srcset="/assets/images-processed/L2-loss-408.jpg 408w" sizes="100vw"></picture><br />
+where y is your input, ε() is your encoder, and D() is your decoder.</p>
+<p>In an IRMAE, your L2 reconstruction loss is<br />
+<picture><source type="image/webp" srcset="/assets/images-processed/IRMAE-loss-640.webp 640w, /assets/images-processed/IRMAE-loss-684.webp 684w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/IRMAE-loss-640.jpg 640w, /assets/images-processed/IRMAE-loss-684.jpg 684w" sizes="100vw"><img src="/assets/images-processed/IRMAE-loss-684.jpg" alt="alt text" srcset="/assets/images-processed/IRMAE-loss-640.jpg 640w, /assets/images-processed/IRMAE-loss-684.jpg 684w" sizes="100vw"></picture><br />
+As you can tell, the extra layers are just matrices that get “absorbed” into the encoder when all the linear matrices<br />
+collapse, as linear matrix multiplication is associative.</p>
+<h2 id="why-do-you-want-irmae">Why do you want IRMAE?<a class="headerlink" href="#why-do-you-want-irmae" title="Permanent link">&para;</a></h2>
+<p>In normal AEs, you have a problem. If you don’t constrain them properly, they can just learn to copy the input instead of learning anything meaningful. Your latent space gets messy, high-dimensional, and can have holes, which makes it bad for things like generation and interpolation.</p>
+<p>In IRMAEs, you implicitly push the latent space towards a lower rank, so you get a more compact latent space that still works well for reconstruction, generation. </p>
+<p>You COULD try fixing this by adding explicit constraints, eg.  reducing the latent size, adding noise (VAE), or enforcing sparsity. But these have their own problems, eg. you have to guess the right latent size, it can be comparatively noisier, etc.</p>
+<h2 id="implementations">Implementations<a class="headerlink" href="#implementations" title="Permanent link">&para;</a></h2>
+<p>To show how effective IRMAEs are, we check whether the model can automatically discover the true number of underlying factors in the data by analyzing how many latent dimensions it actually uses. We compare the performance of a normal AE, an AE with L1 and L2 regularization, and an IRMAE.<br />
+<picture><source type="image/webp" srcset="/assets/images-processed/Exp4-1_graph-640.webp 640w, /assets/images-processed/Exp4-1_graph-952.webp 952w" sizes="100vw"><source type="image/jpeg" srcset="/assets/images-processed/Exp4-1_graph-640.jpg 640w, /assets/images-processed/Exp4-1_graph-952.jpg 952w" sizes="100vw"><img src="/assets/images-processed/Exp4-1_graph-952.jpg" alt="alt text" srcset="/assets/images-processed/Exp4-1_graph-640.jpg 640w, /assets/images-processed/Exp4-1_graph-952.jpg 952w" sizes="100vw"></picture></p>
+<p>From this, you can see that the IRMAE is actually minimizing the rank, only the first few singular values are non-zero, which means that the model is using only a few dimensions in the latent space to encode the data. The L1 and L2 regularized AEs DO regularize, but singular values reduce slowly, and there are many dimensions still active.</p>
+</article>
+</div>
+
+  </main>
+
+  <footer class="mt-auto w-full text-center py-6">
+    Generated using mettu, with ❤️
+  </footer>
+
+  <!-- Vanta.js scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="/assets/otherFiles/vanta.clouds.min.js"></script>
+  <script>
+    VANTA.CLOUDS({
+      el: "#vanta-background",
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      skyColor: 0x232c50,
+      cloudColor: 0x4b6cb9,
+      cloudShadowColor: 0x1b3955,
+      sunColor: 0xaf93f5,
+      speed: 0.00
+    })
+  </script>
+</body>
+
+</html>
