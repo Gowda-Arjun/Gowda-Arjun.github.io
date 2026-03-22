@@ -5,8 +5,8 @@ layout: "post"
 tags:
     - "machine-learning"
     - "neural-networks"
-    - "nlpca"
-    - "pca"
+    - "irmae"
+    - "autoencoders"
 ---
 
 
