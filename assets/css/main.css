@@ -2,3 +2,15 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @import "./generated.daisyui.css";
+
+body {
+  color: #F6E8C3;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, a, span, div, button, input, textarea, select, label {
+  color: #F6E8C3;
+}
+
+.card-title, .card-body, .prose, .prose-invert {
+  color: #F6E8C3;
+}
