@@ -69,6 +69,8 @@ You COULD try fixing this by adding explicit constraints, eg.  reducing the late
 ## Implementations
 
 To show how effective IRMAEs are, we check whether the model can automatically discover the true number of underlying factors in the data by analyzing how many latent dimensions it actually uses. We compare the performance of a normal AE, an AE with L1 and L2 regularization, and an IRMAE.
+
+Here, we use a synthetic dataset, in which each image is a 32x32 RGB image with a random color, size, shape, and position. From this, we can tell that the intrinsic dimensionality is 7 (3 for color, 2 for position, and 1 for size and one for shape). We want our model to use just 7 dimensions to encode the data, even though the latent code has 32 dimensions.
 ![alt text](/assets/images/Exp4-1_graph.png)
 
-From this, you can see that the IRMAE is actually minimizing the rank, only the first few singular values are non-zero, which means that the model is using only a few dimensions in the latent space to encode the data. The L1 and L2 regularized AEs DO regularize, but singular values reduce slowly, and there are many dimensions still active.
+From the result, you can see that the IRMAE is actually minimizing the rank, only the first few singular values are non-zero, which means that the model is using only a few dimensions in the latent space to encode the data. The L1 and L2 regularized AEs DO regularize, but singular values reduce slowly, and there are many dimensions still active.
