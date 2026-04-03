@@ -14,3 +14,11 @@ body, h1, h2, h3, h4, h5, h6, p, a, span, div, button, input, textarea, select, 
 .card-title, .card-body, .prose, .prose-invert {
   color: #F6E8C3;
 }
+
+.navbar-transparent {
+  background-color: transparent;
+}
+
+.navbar-solid {
+  background-color: #52476f;
+}
